@@ -16,7 +16,6 @@ type Event struct {
 	// contains filtered or unexported fields
 	l         *Logger
 	StepValue string
-	MsgValue  string
 }
 
 func (e *Event) Step(step string) *Event {
@@ -25,9 +24,13 @@ func (e *Event) Step(step string) *Event {
 }
 
 func (e *Event) Msg(msg string) {
-	e.MsgValue = msg
 	// println(msg)
-	e.l.w.Write(e.l.c.AppName, e.l.c.GoodsCode, e.l.c.LoginId, e.l.c.TkId, e.StepValue, e.MsgValue)
+	e.l.w.Write(e.l.c.AppName, e.l.c.GoodsCode, e.l.c.LoginId, e.l.c.TkId, e.StepValue, msg)
+}
+
+func (e *Event) Err(err error) {
+	msg := fmt.Sprintf("Error | %s", err.Error())
+	e.l.w.Write(e.l.c.AppName, e.l.c.GoodsCode, e.l.c.LoginId, e.l.c.TkId, e.StepValue, msg)
 }
 
 func (e *Event) MsgArr(a ...interface{}) {
@@ -49,8 +52,8 @@ func (e *Event) MsgArr(a ...interface{}) {
 
 	}
 
-	e.MsgValue = strings.TrimSuffix(b.String(), " | ")
-	e.l.w.Write(e.l.c.AppName, e.l.c.GoodsCode, e.l.c.LoginId, e.l.c.TkId, e.StepValue, e.MsgValue)
+	msg := strings.TrimSuffix(b.String(), " | ")
+	e.l.w.Write(e.l.c.AppName, e.l.c.GoodsCode, e.l.c.LoginId, e.l.c.TkId, e.StepValue, msg)
 }
 
 // func (e *Event) Str(key, val string) *Event {
@@ -93,7 +96,7 @@ func (l *Logger) Printf(format string, v ...interface{}) {
 }
 
 func (l *Logger) Log() *Event {
-	l.e = &Event{l, "", ""}
+	l.e = &Event{l, ""}
 	return l.e
 }
 
@@ -134,65 +137,3 @@ func (c Context) SetTkId(tkId string) Context {
 	c.TkId = tkId
 	return c
 }
-
-// func LogTkEvent(tkinfo TicketingInfo, stepName string, message string) {
-//
-// 	go func() {
-// 		defer func() {
-// 			if r := recover(); r != nil {
-// 				log.Log().Str("f", fmt.Sprintf("%v", r)).Msg("Error is recovered.")
-// 				var err error
-// 				switch x := r.(type) {
-// 				case string:
-// 					err = errors.New(x)
-// 				case error:
-// 					err = x
-// 				default:
-// 					err = errors.New("unknown panic")
-// 				}
-// 				log.Error().Stack().Err(err).Msg("")
-// 			}
-// 		}()
-//
-// 		// set up a connection to the server.
-// 		conn, err := grpc.Dial(cfg.LoggerAddress, grpc.WithInsecure(), grpc.WithBlock())
-// 		if err != nil {
-// 			log.Error().Err(err).Msg("")
-// 		}
-// 		defer conn.Close()
-//
-// 		c := pb.NewGreeterClient(conn)
-// 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-// 		defer cancel()
-// 		{
-// 			_, err := c.LogTicketingEvent(ctx, &pb.TicketingEventRequest{LoginId: tkinfo.SiteLoginId, TkId: tkinfo.TkId, StepName: stepName, Message: message})
-// 			if err != nil {
-// 				log.Error().Err(err).Msg("")
-// 			}
-// 		}
-//
-// 	}()
-// }
-
-// func SetChanSize(size int) {
-// 	logchan = make(chan string, size)
-// }
-//
-// func SetFlags(flag int) {
-// 	log.SetFlags(flag)
-// }
-//
-// func Print(v ...interface{}) {
-// 	// log.Printf(v...)
-// 	logchan <- fmt.Sprint(v...)
-// }
-//
-// func Printf(format string, v ...interface{}) {
-// 	// log.Printf(format, v...)
-// 	logchan <- fmt.Sprintf(format, v...)
-// }
-//
-// func Println(a ...interface{}) (n int, err error) {
-// 	logchan <- fmt.Sprintln(a...)
-// 	return
-// }

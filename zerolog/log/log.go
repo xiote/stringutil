@@ -14,7 +14,7 @@ func (w StderrWriter) Write(appName string, goodsCode string, loginId string, ti
 
 	// fmt.Fprintln(os.Stderr, "hello world")
 
-	go println(fmt.Sprintf("%s | %s | %s | %s | %s",
+	go println(fmt.Sprintf("%s | %s | %s | %s | %s | %s | %s",
 		appName,
 		goodsCode,
 		loginId,

@@ -1,27 +1,36 @@
-package zerolog_test
+package zerolog
 
 import (
-	// "fmt"
+	"fmt"
 	// "github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
 
-func init() {
-	SetChanSize(10)
+type StderrWriter struct {
+	//
 }
 
-func TestPrint(t *testing.T) {
-	Print("TestPrint")
-	time.Sleep(time.Second)
+func (w StderrWriter) Write(appName string, goodsCode string, loginId string, ticketingId string, stepName string, message string) {
+
+	// fmt.Fprintln(os.Stderr, "hello world")
+
+	go println(fmt.Sprintf("%s | %s | %s | %s | %s | %s | %s",
+		appName,
+		goodsCode,
+		loginId,
+		ticketingId,
+		// realClock.Now().Format("0102_15:04:05.000"),
+		time.Now().Format("0102_15:04:05.000"),
+		stepName,
+		message,
+	))
 }
 
-func TestPrintf(t *testing.T) {
-	Printf("%s", "TestPrintf")
-	time.Sleep(time.Second)
-}
+func TestEventErr(t *testing.T) {
+	var logger = New(StderrWriter{}).With().Logger()
 
-func TestPrintln(t *testing.T) {
-	Print("TestPrintln")
-	time.Sleep(time.Second)
+	logger.Log().
+		Err(fmt.Errorf("ABC"))
+	<-time.After(time.Second)
 }
